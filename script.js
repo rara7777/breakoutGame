@@ -3,8 +3,8 @@ var ctx = canvas.getContext('2d');
 
 var x = canvas.width/2;
 var y = canvas.height - 30;
-var dx = 2;
-var dy = -2;
+var dx = 4;
+var dy = -4;
 var ballRadis = 10;
 var paddleHeight = 10;
 var paddleWidth = 75;
@@ -18,6 +18,8 @@ var brickHeight = 20;
 var brickPadding = 10;
 var brickOffsetTop = 30;
 var brickOffsetLeft = 30;
+var score = 0;
+var lives = 3;
 
 var bricks = [];
 for(c = 0; c < brickColumnCount; c++) {
@@ -88,17 +90,36 @@ function collisionDetection() {
 				if(x > b.x && x < b.x + brickWidth && y > b.y && y < b.y + brickHeight) {
 					dy = -dy;
 					b.status = 0;
+					score++;
+					if(score == brickRowCount * brickColumnCount) {
+						alert("You Win!");
+						document.location.reload();
+					}
 				}
 			}
 		}
 	}
 }
 
+function drawScore() {
+	ctx.font = "16px Arial";
+	ctx.fillStyle = "#0095DD";
+	ctx.fillText("Score: " + score, 8, 20);
+}
+function drawLives() {
+	ctx.font = "16px Arial";
+	ctx.fillStyle = "#0095DD";
+	ctx.fillText("Lives: " + lives, canvas.width - 65, 20);
+}
+
+
 function draw(){
 	ctx.clearRect(0,0,canvas.width, canvas.height);
 	drawBricks();
 	drawBall();
 	drawPaddle();
+	drawScore();
+	drawLives();
 	collisionDetection();
 
 	if( y + dy < ballRadis){
@@ -106,11 +127,21 @@ function draw(){
 	}else if(y + dy > canvas.height - ballRadis) {
 		if(x > paddleX && x < paddleX + paddleWidth) {
 			dy =-dy;
-
 		} else {
-			alert('GameOver!');
-			document.location.reload();
+			lives--;
+		
+			if(!lives) {
+				alert('GameOver!');
+				document.location.reload();
+			} else {
+				x = canvas.width/2;
+				y = canvas.height-30;
+				dx = 4;
+				dy = -4;
+				paddleX = (canvas.width - paddleWidth)/2;
+			}
 		}
+
 	}
 
 	if(x + dx > canvas.width - ballRadis || x + dx < ballRadis){
@@ -125,6 +156,16 @@ function draw(){
 
 	x += dx;
 	y += dy;
+	requestAnimationFrame(draw);
 }
 
-setInterval(draw, 10);
+document.addEventListener("mousemove", mouseMoveHandler);
+
+function mouseMoveHandler(e) {
+	var relativeX = e.clientX - canvas.offsetLeft;
+	if(relativeX > 0 + paddleWidth/2 && relativeX < canvas.width - paddleWidth/2) {
+		paddleX = relativeX - paddleWidth/2;
+	}
+}
+draw();
+//setInterval(draw, 10);
